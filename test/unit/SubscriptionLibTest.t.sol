@@ -29,11 +29,7 @@ contract SubscriptionLibHarness {
     }
 
     // Accessors/mutators to drive branches in isDue()
-    function get()
-        external
-        view
-        returns (SubscriptionLib.Subscription memory s)
-    {
+    function get() external view returns (SubscriptionLib.Subscription memory s) {
         s = sub;
     }
 
@@ -89,14 +85,7 @@ contract SubscriptionLibTest is Test {
         uint256 pid = 42;
 
         vm.expectEmit(address(harness));
-        emit SubscriptionLibHarness.SubscriptionCreated(
-            pid,
-            user,
-            provider,
-            address(usdc),
-            amount,
-            interval
-        );
+        emit SubscriptionLibHarness.SubscriptionCreated(pid, user, provider, address(usdc), amount, interval);
 
         uint256 start = block.timestamp;
         harness.createSub(user, provider, address(usdc), amount, interval, pid);
@@ -135,7 +124,7 @@ contract SubscriptionLibTest is Test {
 
     function testCreate_Revert_IntervalTooShort() public {
         vm.expectRevert(bytes("Interval too short"));
-        harness.createSub(user, provider, address(usdc), 1, 3599 /* < 1h */, 1);
+        harness.createSub(user, provider, address(usdc), 1, 3599, /* < 1h */ 1);
     }
 
     function testIsDue_FalseImmediatelyAfterCreate() public {

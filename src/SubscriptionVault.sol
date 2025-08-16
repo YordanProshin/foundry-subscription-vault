@@ -29,25 +29,15 @@ contract SubscriptionVault is ReentrancyGuard, Ownable {
         paymentToken = _token;
     }
 
-    event SubscriptionCreated(
-        bytes32 indexed id,
-        address subscriber,
-        address merchant,
-        address token,
-        uint256 amount
-    );
+    event SubscriptionCreated(bytes32 indexed id, address subscriber, address merchant, address token, uint256 amount);
     event PaymentProcessed(bytes32 indexed id, uint256 timestamp, bool success);
     event SubscriptionCancelled(bytes32 indexed id);
 
-    function createSubscription(
-        address _merchant,
-        address _token,
-        uint256 _amount,
-        uint256 _interval
-    ) external returns (bytes32) {
-        bytes32 subId = keccak256(
-            abi.encodePacked(msg.sender, _merchant, block.timestamp)
-        );
+    function createSubscription(address _merchant, address _token, uint256 _amount, uint256 _interval)
+        external
+        returns (bytes32)
+    {
+        bytes32 subId = keccak256(abi.encodePacked(msg.sender, _merchant, block.timestamp));
 
         _subscriptions[subId] = Subscription({
             subscriber: msg.sender,
@@ -71,11 +61,7 @@ contract SubscriptionVault is ReentrancyGuard, Ownable {
         require(sub.active, "Inactive subscription");
         require(block.timestamp >= sub.nextDue, "Not due yet");
 
-        bool success = IERC20(sub.token).transferFrom(
-            sub.subscriber,
-            sub.merchant,
-            sub.amount
-        );
+        bool success = IERC20(sub.token).transferFrom(sub.subscriber, sub.merchant, sub.amount);
 
         if (success) {
             sub.lastPaid = block.timestamp;
@@ -94,9 +80,7 @@ contract SubscriptionVault is ReentrancyGuard, Ownable {
         emit SubscriptionCancelled(_subId);
     }
 
-    function getSubscriptionsForUser(
-        address user
-    ) external view returns (Subscription[] memory) {
+    function getSubscriptionsForUser(address user) external view returns (Subscription[] memory) {
         bytes32[] memory ids = _userSubscriptions[user];
         Subscription[] memory subs = new Subscription[](ids.length);
         for (uint256 i = 0; i < ids.length; i++) {
@@ -105,15 +89,11 @@ contract SubscriptionVault is ReentrancyGuard, Ownable {
         return subs;
     }
 
-    function subscriptions(
-        bytes32 id
-    ) external view returns (Subscription memory) {
+    function subscriptions(bytes32 id) external view returns (Subscription memory) {
         return _subscriptions[id];
     }
 
-    function getSubscription(
-        bytes32 subId
-    )
+    function getSubscription(bytes32 subId)
         external
         view
         returns (
@@ -128,15 +108,7 @@ contract SubscriptionVault is ReentrancyGuard, Ownable {
         )
     {
         Subscription storage sub = _subscriptions[subId];
-        return (
-            sub.subscriber,
-            sub.merchant,
-            sub.token,
-            sub.amount,
-            sub.interval,
-            sub.lastPaid,
-            sub.nextDue,
-            sub.active
-        );
+        return
+            (sub.subscriber, sub.merchant, sub.token, sub.amount, sub.interval, sub.lastPaid, sub.nextDue, sub.active);
     }
 }

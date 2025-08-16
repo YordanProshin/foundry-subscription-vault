@@ -26,20 +26,10 @@ contract Interactions is Script {
         usdc.approve(address(vault), 500 ether);
 
         vm.prank(user1);
-        vault.createSubscription(
-            address(user1),
-            address(usdc),
-            100 ether,
-            30 days
-        );
+        vault.createSubscription(address(user1), address(usdc), 100 ether, 30 days);
 
         vm.prank(user2);
-        vault.createSubscription(
-            address(user2),
-            address(usdc),
-            50 ether,
-            15 days
-        );
+        vault.createSubscription(address(user2), address(usdc), 50 ether, 15 days);
 
         vm.warp(block.timestamp + 30 days);
         vault.processPayment("sub1");

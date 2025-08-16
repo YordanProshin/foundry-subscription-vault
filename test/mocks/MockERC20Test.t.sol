@@ -48,15 +48,7 @@ contract MockERC20Test is Test {
 
     function testMintZeroAmount() public {
         token.mint(alice, 0);
-        assertEq(
-            token.balanceOf(alice),
-            0,
-            "zero mint should not increase balance"
-        );
-        assertEq(
-            token.totalSupply(),
-            0,
-            "zero mint should not increase supply"
-        );
+        assertEq(token.balanceOf(alice), 0, "zero mint should not increase balance");
+        assertEq(token.totalSupply(), 0, "zero mint should not increase supply");
     }
 }

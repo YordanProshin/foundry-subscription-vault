@@ -21,15 +21,10 @@ contract DeploySubVaultTest is Test {
         assertTrue(address(usdc) != address(0), "USDC mock should be deployed");
 
         // check vault wiring
-        assertEq(
-            address(vault.paymentToken()),
-            address(usdc),
-            "vault USDC token mismatch"
-        );
+        assertEq(address(vault.paymentToken()), address(usdc), "vault USDC token mismatch");
 
         // vault should start with no subscriptions
-        SubscriptionVault.Subscription[] memory subs = vault
-            .getSubscriptionsForUser(address(this));
+        SubscriptionVault.Subscription[] memory subs = vault.getSubscriptionsForUser(address(this));
         assertEq(subs.length, 0, "should be no subscriptions yet");
 
         vm.stopPrank();
