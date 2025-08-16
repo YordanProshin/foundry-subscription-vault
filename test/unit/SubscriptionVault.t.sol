@@ -21,30 +21,23 @@ contract SubscriptionVaultTest is Test {
     bytes32 public subId;
 
     function setUp() public {
-        // Deploy USDC mock with 10k initial supply (to owner/deployer)
         usdc = new MockUSDC(10_000);
         owner = address(this);
 
-        // Deploy vault
         vault = new SubscriptionVault(IERC20(address(usdc)));
 
-        // Mint tokens to subscriber
         usdc.mint(subscriber, 1000 * 1e6); // 1,000 USDC
 
-        // Approve vault to spend on behalf of subscriber
         vm.startPrank(subscriber);
         usdc.approve(address(vault), type(uint256).max);
         vm.stopPrank();
 
-        // Set context
         vm.label(subscriber, "Subscriber");
         vm.label(merchant, "Merchant");
         vm.label(owner, "Owner");
     }
 
-    // ✅ TEST 1: Create subscription — success
     function test_CreateSubscription_Success() public {
-        // ✅ Instead: Just call and assert — don't use expectEmit
         vm.prank(subscriber);
         bytes32 subscriberId = vault.createSubscription(
             merchant,
@@ -53,11 +46,9 @@ contract SubscriptionVaultTest is Test {
             30 days
         );
 
-        // Now assert emitted event via logs or just validate state
         assertTrue(subscriberId != bytes32(0), "ID should be generated");
     }
 
-    // ✅ TEST 2: Merchant cannot have multiple active subscriptions with same params
     function test_CreateSubscription_UniqueId_PreventsDuplicates() public {
         vm.prank(subscriber);
         bytes32 id1 = vault.createSubscription(
@@ -77,11 +68,9 @@ contract SubscriptionVaultTest is Test {
             30 days
         );
 
-        // Should be different IDs (timestamp changed)
         assertTrue(id1 != id2, "IDs should differ over time");
     }
 
-    // ✅ TEST 3: Process payment when due — success
     function test_ProcessPayment_Success() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -107,7 +96,6 @@ contract SubscriptionVaultTest is Test {
         );
     }
 
-    // ✅ TEST 4: Process payment — too early → revert
     function test_ProcessPayment_TooEarly_Reverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -121,7 +109,6 @@ contract SubscriptionVaultTest is Test {
         vault.processPayment(subId);
     }
 
-    // ✅ TEST 5: Process payment — inactive → revert
     function test_ProcessPayment_Inactive_Reverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -140,7 +127,6 @@ contract SubscriptionVaultTest is Test {
         vault.processPayment(subId);
     }
 
-    // ✅ TEST 6: Cancel subscription — by subscriber only
     function test_CancelSubscription_BySubscriber_Success() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -159,7 +145,6 @@ contract SubscriptionVaultTest is Test {
         assertFalse(sub.active, "Should be inactive");
     }
 
-    // ✅ TEST 7: Cancel subscription — unauthorized → revert
     function test_CancelSubscription_Unauthorized_Reverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -174,9 +159,6 @@ contract SubscriptionVaultTest is Test {
         vault.cancelSubscription(subId);
     }
 
-    // ✅ TEST 9: Payment fails → subscription cancels
-
-    // ✅ TEST 11: Simulate multiple payments over time
     function test_ProcessMultiplePayments() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -203,7 +185,6 @@ contract SubscriptionVaultTest is Test {
         );
     }
 
-    // ✅ TEST 12: Non-active payment fails even if due
     function test_ProcessPayment_AfterCancel_Reverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(
@@ -223,7 +204,6 @@ contract SubscriptionVaultTest is Test {
     }
 }
 
-// 🛠 Mock failing token for testing failed transfers
 contract RevertingToken is IERC20 {
     function totalSupply() external pure override returns (uint256) {
         return 0;

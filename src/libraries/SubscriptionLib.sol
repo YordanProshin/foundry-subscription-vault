@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 /**
  * @title SubscriptionLib
- * @author Yordan Proshin (BG) 💙
+ * @author Yordan Proshin
  * @notice A reusable library for managing on-chain subscriptions with ERC-20 tokens.
  * Inspired by trustless automation patterns from Sub2 and Subs Protocol.
  */
