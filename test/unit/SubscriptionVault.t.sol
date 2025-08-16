@@ -37,14 +37,14 @@ contract SubscriptionVaultTest is Test {
         vm.label(owner, "Owner");
     }
 
-    function test_CreateSubscription_Success() public {
+    function testCreateSubscriptionSuccess() public {
         vm.prank(subscriber);
         bytes32 subscriberId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         assertTrue(subscriberId != bytes32(0), "ID should be generated");
     }
 
-    function test_CreateSubscription_UniqueId_PreventsDuplicates() public {
+    function testCreateSubscriptionUniqueIdPreventsDuplicates() public {
         vm.prank(subscriber);
         bytes32 id1 = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
@@ -56,7 +56,7 @@ contract SubscriptionVaultTest is Test {
         assertTrue(id1 != id2, "IDs should differ over time");
     }
 
-    function test_ProcessPayment_Success() public {
+    function testProcessPaymentSuccess() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 7 days);
 
@@ -72,7 +72,7 @@ contract SubscriptionVaultTest is Test {
         assertEq(usdc.balanceOf(merchant), 100 * 1e6, "Merchant didn't receive funds");
     }
 
-    function test_ProcessPayment_TooEarly_Reverts() public {
+    function testProcessPaymentTooEarlyReverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
@@ -80,7 +80,7 @@ contract SubscriptionVaultTest is Test {
         vault.processPayment(subId);
     }
 
-    function test_ProcessPayment_Inactive_Reverts() public {
+    function testProcessPaymentInactiveReverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 7 days);
 
@@ -93,7 +93,7 @@ contract SubscriptionVaultTest is Test {
         vault.processPayment(subId);
     }
 
-    function test_CancelSubscription_BySubscriber_Success() public {
+    function testCancelSubscriptionBySubscriberSuccess() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
@@ -106,7 +106,7 @@ contract SubscriptionVaultTest is Test {
         assertFalse(sub.active, "Should be inactive");
     }
 
-    function test_CancelSubscription_Unauthorized_Reverts() public {
+    function testCancelSubscriptionUnauthorizedReverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
@@ -115,7 +115,7 @@ contract SubscriptionVaultTest is Test {
         vault.cancelSubscription(subId);
     }
 
-    function test_ProcessMultiplePayments() public {
+    function testProcessMultiplePayments() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 5 days);
 
@@ -130,7 +130,7 @@ contract SubscriptionVaultTest is Test {
         assertEq(usdc.balanceOf(merchant), 300 * 1e6, "Merchant balance mismatch");
     }
 
-    function test_ProcessPayment_AfterCancel_Reverts() public {
+    function testProcessPaymentAfterCancelReverts() public {
         vm.prank(subscriber);
         subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 7 days);
 
@@ -141,6 +141,25 @@ contract SubscriptionVaultTest is Test {
 
         vm.expectRevert(bytes("Inactive subscription"));
         vault.processPayment(subId);
+    }
+
+    function testGetSubscriptionsForUserEmpty() public view {
+        SubscriptionVault.Subscription[] memory subs = vault.getSubscriptionsForUser(subscriber);
+        assertEq(subs.length, 0, "Should have 0 subscriptions when empty");
+    }
+
+    function testProcessPaymentSuccessExactDueDate() public {
+        vm.prank(subscriber);
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
+
+        uint256 dueTime = block.timestamp + 30 days;
+        vm.warp(dueTime);
+
+        vm.prank(merchant);
+        vault.processPayment(subId);
+
+        SubscriptionVault.Subscription memory sub = vault.subscriptions(subId);
+        assertEq(sub.nextDue, dueTime + 30 days, "Next due not updated correctly");
     }
 }
 

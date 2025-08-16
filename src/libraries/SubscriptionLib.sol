@@ -105,4 +105,8 @@ library SubscriptionLib {
     function isDue(Subscription storage self) external view returns (bool) {
         return (self.isActive && !self.isPaused && block.timestamp >= self.lastPaid + self.interval);
     }
+
+    function Days(uint256 n) internal pure returns (uint256) {
+        return n * 86400;
+    }
 }
