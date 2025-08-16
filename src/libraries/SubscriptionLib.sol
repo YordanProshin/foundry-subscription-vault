@@ -12,7 +12,7 @@ library SubscriptionLib {
      * @notice Subscription model for recurring payments
      * @param user Wallet address of subscriber
      * @param provider Wallet address of service
-     *param token Token used for payment (e.g., USDC, DAI)
+     * param token Token used for payment (e.g., USDC, DAI)
      * @param amount Amount to charge per interval
      * @param interval Time between payments in seconds (e.g., 30 days)
      * @param lastPaid Timestamp of last successful payment
@@ -57,11 +57,7 @@ library SubscriptionLib {
     /**
      * @notice Emitted when a subscription is paid
      */
-    event SubscriptionPaid(
-        uint256 indexed paymentId,
-        uint256 amount,
-        uint256 timestamp
-    );
+    event SubscriptionPaid(uint256 indexed paymentId, uint256 amount, uint256 timestamp);
 
     /**
      * @notice Create a new subscription
@@ -98,14 +94,7 @@ library SubscriptionLib {
         self.isPaused = false;
         self.paymentId = _paymentId;
 
-        emit SubscriptionCreated(
-            _paymentId,
-            _user,
-            _provider,
-            _token,
-            _amount,
-            _interval
-        );
+        emit SubscriptionCreated(_paymentId, _user, _provider, _token, _amount, _interval);
     }
 
     /**
@@ -114,8 +103,6 @@ library SubscriptionLib {
      * @return bool True if payment is due
      */
     function isDue(Subscription storage self) external view returns (bool) {
-        return (self.isActive &&
-            !self.isPaused &&
-            block.timestamp >= self.lastPaid + self.interval);
+        return (self.isActive && !self.isPaused && block.timestamp >= self.lastPaid + self.interval);
     }
 }

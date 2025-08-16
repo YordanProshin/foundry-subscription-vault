@@ -39,46 +39,26 @@ contract SubscriptionVaultTest is Test {
 
     function test_CreateSubscription_Success() public {
         vm.prank(subscriber);
-        bytes32 subscriberId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            30 days
-        );
+        bytes32 subscriberId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         assertTrue(subscriberId != bytes32(0), "ID should be generated");
     }
 
     function test_CreateSubscription_UniqueId_PreventsDuplicates() public {
         vm.prank(subscriber);
-        bytes32 id1 = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            30 days
-        );
+        bytes32 id1 = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         vm.warp(100);
 
         vm.prank(subscriber);
-        bytes32 id2 = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            30 days
-        );
+        bytes32 id2 = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         assertTrue(id1 != id2, "IDs should differ over time");
     }
 
     function test_ProcessPayment_Success() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            7 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 7 days);
 
         vm.warp(block.timestamp + 8 days); // Fast-forward past due date
 
@@ -89,21 +69,12 @@ contract SubscriptionVaultTest is Test {
 
         SubscriptionVault.Subscription memory sub = vault.subscriptions(subId);
         assertTrue(sub.nextDue > block.timestamp, "Next due not updated");
-        assertEq(
-            usdc.balanceOf(merchant),
-            100 * 1e6,
-            "Merchant didn't receive funds"
-        );
+        assertEq(usdc.balanceOf(merchant), 100 * 1e6, "Merchant didn't receive funds");
     }
 
     function test_ProcessPayment_TooEarly_Reverts() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            30 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         vm.expectRevert();
         vault.processPayment(subId);
@@ -111,12 +82,7 @@ contract SubscriptionVaultTest is Test {
 
     function test_ProcessPayment_Inactive_Reverts() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            7 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 7 days);
 
         vm.prank(subscriber);
         vault.cancelSubscription(subId);
@@ -129,12 +95,7 @@ contract SubscriptionVaultTest is Test {
 
     function test_CancelSubscription_BySubscriber_Success() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            30 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         vm.prank(subscriber);
         vm.expectEmit(true, true, false, false);
@@ -147,12 +108,7 @@ contract SubscriptionVaultTest is Test {
 
     function test_CancelSubscription_Unauthorized_Reverts() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            30 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 30 days);
 
         vm.prank(notSubscriber);
         vm.expectRevert(bytes("Not subscriber"));
@@ -161,38 +117,22 @@ contract SubscriptionVaultTest is Test {
 
     function test_ProcessMultiplePayments() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            5 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 5 days);
 
         for (uint256 i = 0; i < 3; i++) {
             vm.warp(block.timestamp + 6 days); // Advance to due date
             vault.processPayment(subId);
 
-            SubscriptionVault.Subscription memory sub = vault.subscriptions(
-                subId
-            );
+            SubscriptionVault.Subscription memory sub = vault.subscriptions(subId);
             assertEq(sub.lastPaid, block.timestamp, "Last paid not updated");
         }
 
-        assertEq(
-            usdc.balanceOf(merchant),
-            300 * 1e6,
-            "Merchant balance mismatch"
-        );
+        assertEq(usdc.balanceOf(merchant), 300 * 1e6, "Merchant balance mismatch");
     }
 
     function test_ProcessPayment_AfterCancel_Reverts() public {
         vm.prank(subscriber);
-        subId = vault.createSubscription(
-            merchant,
-            address(usdc),
-            100 * 1e6,
-            7 days
-        );
+        subId = vault.createSubscription(merchant, address(usdc), 100 * 1e6, 7 days);
 
         vm.prank(subscriber);
         vault.cancelSubscription(subId);
@@ -217,10 +157,7 @@ contract RevertingToken is IERC20 {
         revert();
     }
 
-    function allowance(
-        address,
-        address
-    ) external pure override returns (uint256) {
+    function allowance(address, address) external pure override returns (uint256) {
         return type(uint256).max;
     }
 
@@ -228,11 +165,7 @@ contract RevertingToken is IERC20 {
         return true;
     }
 
-    function transferFrom(
-        address,
-        address,
-        uint256
-    ) external pure override returns (bool) {
+    function transferFrom(address, address, uint256) external pure override returns (bool) {
         revert("TransferFrom failed");
     }
 }
