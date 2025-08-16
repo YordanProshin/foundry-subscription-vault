@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: MIT
+[profile.default]
+# Project structure
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["node_modules", "lib"]
+
+# Solidity compiler settings
+solc_version = "0.8.24"  # Latest stable and widely used
+optimizer = true
+optimizer_runs = 200
+
+# Remappings for OpenZeppelin
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/"
+]
+
+# EVM settings (standard for most chains)
+evm_version = "paris"
+
+# Testing
+# We use Cairo-compatible chain IDs to avoid conflicts
+chain_id = 31337  # Default for forge test (Anvil)
+verbosity = 1
+ffi = true  # Allows tests to read/write files (use carefully!)
+no_storage_caching = false
+sender = "0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38"
+tx_origin = "0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38"
+
+# Coverage & Gas Reports
+gas_reports = ["SubscriptionVault"]
+
+# Disable unsafe operations in production builds
+# These are only enabled selectively during testing if needed
+# Example: https://book.getfoundry.sh/config/ describes FFI risks
+
+# Named profiles for flexibility
+[profile.fuzz]
+fuzz_runs = 1000
+fuzz_max_test_rejects = 10000
+
+[profile.ci]
+verbosity = 2
+slow = false  # Speed up CI
+
+# Optional: Configure RPC endpoints later
+# [rpc_endpoints]
+# sepolia = "${SEPOLIA_RPC_URL}"
+# goerli = "${GOERLI_RPC_URL}"
